@@ -3,16 +3,33 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const nodemailer = require("nodemailer");
 
 const app = express();
 const PORT = 5000;
 const SECRET_KEY = 'railway_secret_key_2024';
 
+// Email setup
+const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
+  auth: {
+    user: "kashikashik09@gmail.com",
+    pass: "zvrtotfdbumhjnlt"
+  }
+});
+
+transporter.verify((error) => {
+  if (error) console.log("EMAIL ERROR:", error);
+  else console.log("Email server is ready");
+});
+
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
 
-// In-memory databases (simple arrays)
+// In-memory databases
 let users = [];
 let trains = [
   { id: 1, name: 'Chennai Express', from: 'Chennai', to: 'Mumbai', departure: '06:00 AM', arrival: '10:00 PM', price: 1200, seatsAvailable: 50, totalSeats: 50, bookedSeats: [], class: 'Sleeper' },
@@ -26,21 +43,15 @@ let trains = [
 ];
 let bookings = [];
 
-// Routes
-
-// User Registration
+// Register
 app.post('/api/register', async (req, res) => {
   const { name, email, password, phone } = req.body;
-  
-  // Check if user exists
+
   const userExists = users.find(u => u.email === email);
-  if (userExists) {
-    return res.status(400).json({ message: 'User already exists' });
-  }
-  
-  // Hash password
+  if (userExists) return res.status(400).json({ message: 'User already exists' });
+
   const hashedPassword = await bcrypt.hash(password, 10);
-  
+
   const newUser = {
     id: users.length + 1,
     name,
@@ -48,51 +59,35 @@ app.post('/api/register', async (req, res) => {
     password: hashedPassword,
     phone
   };
-  
+
   users.push(newUser);
-  res.status(201).json({ message: 'User registered successfully' });
+
+  transporter.sendMail({
+    from: "kashikashik09@gmail.com",
+    to: email,
+    subject: "Registration Successful",
+    text: `Hello ${name}, your railway account has been created successfully.`
+  });
+
+  res.status(201).json({ message: 'User registered successfully + email sent' });
 });
 
-// User Login
+// Login
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
-  
+
   const user = users.find(u => u.email === email);
-  if (!user) {
-    return res.status(400).json({ message: 'Invalid credentials' });
-  }
-  
+  if (!user) return res.status(400).json({ message: 'Invalid credentials' });
+
   const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) {
-    return res.status(400).json({ message: 'Invalid credentials' });
-  }
-  
+  if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
+
   const token = jwt.sign({ userId: user.id }, SECRET_KEY, { expiresIn: '24h' });
-  
-  res.json({ 
-    token, 
+
+  res.json({
+    token,
     user: { id: user.id, name: user.name, email: user.email, phone: user.phone }
   });
-});
-
-// Search Trains
-app.get('/api/trains/search', (req, res) => {
-  const { from, to } = req.query;
-  
-  let filteredTrains = trains;
-  
-  if (from && to) {
-    filteredTrains = trains.filter(
-      t => t.from.toLowerCase() === from.toLowerCase() && 
-           t.to.toLowerCase() === to.toLowerCase()
-    );
-  } else if (from) {
-    filteredTrains = trains.filter(t => t.from.toLowerCase() === from.toLowerCase());
-  } else if (to) {
-    filteredTrains = trains.filter(t => t.to.toLowerCase() === to.toLowerCase());
-  }
-  
-  res.json(filteredTrains);
 });
 
 // Get all trains
@@ -100,25 +95,40 @@ app.get('/api/trains', (req, res) => {
   res.json(trains);
 });
 
-// Book Ticket
+// Search trains
+app.get('/api/trains/search', (req, res) => {
+  const { from, to } = req.query;
+
+  let filteredTrains = trains;
+
+  if (from && to) {
+    filteredTrains = trains.filter(
+      t => t.from.toLowerCase() === from.toLowerCase() &&
+           t.to.toLowerCase() === to.toLowerCase()
+    );
+  } else if (from) {
+    filteredTrains = trains.filter(t => t.from.toLowerCase() === from.toLowerCase());
+  } else if (to) {
+    filteredTrains = trains.filter(t => t.to.toLowerCase() === to.toLowerCase());
+  }
+
+  res.json(filteredTrains);
+});
+
+// Booking
 app.post('/api/bookings', (req, res) => {
   const { trainId, userId, passengerName, age, seats, selectedSeats, totalPrice } = req.body;
-  
+
   const train = trains.find(t => t.id === trainId);
-  if (!train) {
-    return res.status(404).json({ message: 'Train not found' });
-  }
-  
+  if (!train) return res.status(404).json({ message: 'Train not found' });
+
   if (train.seatsAvailable < seats) {
     return res.status(400).json({ message: 'Not enough seats available' });
   }
-  
-  // Reduce available seats and add to booked list
+
   train.seatsAvailable -= seats;
-  if (selectedSeats && Array.isArray(selectedSeats)) {
-    train.bookedSeats.push(...selectedSeats);
-  }
-  
+  if (selectedSeats) train.bookedSeats.push(...selectedSeats);
+
   const booking = {
     id: bookings.length + 1,
     trainId,
@@ -132,48 +142,78 @@ app.post('/api/bookings', (req, res) => {
     pnr: 'PNR' + Math.floor(1000000000 + Math.random() * 9000000000),
     status: 'Confirmed'
   };
-  
+
   bookings.push(booking);
-  
+
+  const user = users.find(u => u.id === userId);
+
+  if (user) {
+    transporter.sendMail({
+      from: "kashikashik09@gmail.com",
+      to: user.email,
+      subject: "Ticket Booking Confirmed",
+      text: `Hello ${user.name},
+
+Your ticket is confirmed!
+
+Train ID: ${trainId}
+Passenger: ${passengerName}
+Seats: ${seats}
+PNR: ${booking.pnr}`
+    });
+  }
+
   res.status(201).json({ message: 'Booking successful', booking });
 });
 
-// Get user bookings
+// ✅ Get user bookings (RESTORED)
 app.get('/api/bookings/:userId', (req, res) => {
   const userId = parseInt(req.params.userId);
+
   const userBookings = bookings.filter(b => b.userId === userId);
-  
-  // Add train details to bookings
+
   const bookingsWithTrains = userBookings.map(booking => {
     const train = trains.find(t => t.id === booking.trainId);
     return { ...booking, train };
   });
-  
+
   res.json(bookingsWithTrains);
 });
 
 // Cancel booking
 app.delete('/api/bookings/:bookingId', (req, res) => {
   const bookingId = parseInt(req.params.bookingId);
-  const bookingIndex = bookings.findIndex(b => b.id === bookingId);
-  
-  if (bookingIndex === -1) {
+  const index = bookings.findIndex(b => b.id === bookingId);
+
+  if (index === -1) {
     return res.status(404).json({ message: 'Booking not found' });
   }
-  
-  const booking = bookings[bookingIndex];
+
+  const booking = bookings[index];
   const train = trains.find(t => t.id === booking.trainId);
-  
-  // Return seats
+
+  const user = users.find(u => u.id === booking.userId);
+
+  if (user) {
+    transporter.sendMail({
+      from: "kashikashik09@gmail.com",
+      to: user.email,
+      subject: "Ticket Cancelled",
+      text: `Hello ${user.name},
+
+Your ticket with PNR ${booking.pnr} has been cancelled successfully.`
+    });
+  }
+
   if (train) {
     train.seatsAvailable += booking.seats;
     if (booking.selectedSeats && booking.selectedSeats.length > 0) {
       train.bookedSeats = train.bookedSeats.filter(s => !booking.selectedSeats.includes(s));
     }
   }
-  
-  bookings.splice(bookingIndex, 1);
-  
+
+  bookings.splice(index, 1);
+
   res.json({ message: 'Booking cancelled successfully' });
 });
 
