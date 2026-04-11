@@ -1,0 +1,305 @@
+.payment-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.payment-modal, .receipt-container {
+  background: white;
+  border-radius: 16px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.payment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.payment-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-size: 20px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.payment-summary {
+  padding: 24px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.payment-summary h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 14px;
+}
+
+.summary-item.total {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 2px solid #d1d5db;
+  font-size: 16px;
+}
+
+.payment-form {
+  padding: 24px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.payment-info {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.payment-info p {
+  margin: 0;
+  font-size: 13px;
+  color: #1e40af;
+}
+
+.btn-pay {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-pay:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.receipt-header {
+  text-align: center;
+  padding: 32px 24px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border-radius: 16px 16px 0 0;
+}
+
+.receipt-header h2 {
+  margin: 16px 0 8px 0;
+  font-size: 28px;
+}
+
+.receipt-body {
+  padding: 24px;
+}
+
+.receipt-section {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.receipt-section h3 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 14px;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.total-row {
+  background: #fff;
+  padding: 16px !important;
+  margin: 12px -12px 0 -12px;
+  border-radius: 8px;
+  font-size: 16px;
+  border: 2px solid #3b82f6 !important;
+}
+
+.receipt-actions {
+  display: flex;
+  padding: 24px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.btn-primary {
+  flex: 1;
+  padding: 12px 20px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+/* QR Code Styles */
+.qr-container {
+  background: white;
+  border-radius: 16px;
+  max-width: 450px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+}
+
+.qr-header {
+  text-align: center;
+  padding: 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.qr-header h2 {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  color: #1f2937;
+}
+
+.qr-header p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.qr-body {
+  padding: 32px;
+  text-align: center;
+}
+
+.qr-code {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  display: inline-block;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+}
+
+.qr-code img {
+  display: block;
+  width: 250px;
+  height: 250px;
+}
+
+.amount-display {
+  margin-bottom: 24px;
+}
+
+.amount-display p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.amount-display h1 {
+  margin: 8px 0 0 0;
+  color: #059669;
+  font-size: 48px;
+  font-weight: 700;
+}
+
+.processing-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+  background: #f0fdf4;
+  border-radius: 8px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #d1fae5;
+  border-top: 4px solid #059669;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.processing-indicator p {
+  margin: 0;
+  color: #065f46;
+  font-size: 14px;
+  font-weight: 500;
+}

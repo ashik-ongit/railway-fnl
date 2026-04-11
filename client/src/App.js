@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import PaymentGateway from './PaymentGateway';
 import { Search, Train, User, LogOut, Ticket, X, Award, Clock, MapPin } from 'lucide-react';
 import './App.css';
 
@@ -25,6 +26,7 @@ function App() {
   const [bookings, setBookings] = useState([]);
   const [searchFrom, setSearchFrom] = useState('');
   const [searchTo, setSearchTo] = useState('');
+  const [showPayment, setShowPayment] = useState(false);
 
   // Login/Register states
   const [isLogin, setIsLogin] = useState(true);
@@ -151,6 +153,16 @@ function App() {
       return;
     }
 
+    if (!passengerName || !passengerAge) {
+      alert('Please fill in passenger details');
+      return;
+    }
+
+    // Open payment gateway
+    setShowPayment(true);
+  };
+
+  const handlePaymentSuccess = async (paymentDetails) => {
     try {
       const response = await fetch('http://localhost:5000/api/bookings', {
         method: 'POST',
@@ -167,17 +179,20 @@ function App() {
       });
       const data = await response.json();
       if (response.ok) {
-        alert(`Booking Confirmed! PNR: ${data.booking.pnr}`);
-        setSelectedTrain(null);
-        setPassengerName(''); setPassengerAge(''); setSelectedSeats([]);
         fetchAllTrains();
         fetchUserBookings();
-      } else {
-        alert(data.message);
       }
     } catch (error) {
-      alert('Booking failed');
+      console.error('Booking failed');
     }
+  };
+
+  const handlePaymentClose = () => {
+    setShowPayment(false);
+    setSelectedTrain(null);
+    setPassengerName('');
+    setPassengerAge('');
+    setSelectedSeats([]);
   };
 
   const fetchUserBookings = async () => {
@@ -585,6 +600,18 @@ function App() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Payment Gateway Modal */}
+      {showPayment && selectedTrain && (
+        <PaymentGateway
+          train={selectedTrain}
+          selectedSeats={selectedSeats}
+          passengerName={passengerName}
+          passengerAge={passengerAge}
+          onClose={handlePaymentClose}
+          onSuccess={handlePaymentSuccess}
+        />
       )}
     </div>
   );
